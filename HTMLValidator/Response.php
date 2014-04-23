@@ -1,6 +1,19 @@
 <?php
+/**
+ * File contains a simple class structure for holding a response from the
+ * W3C HTMLValidator software.
+ *
+ * PHP versions 5
+ *
+ * @license  http://www.opensource.org/licenses/bsd-license.php BSD
+ */
 namespace HTMLValidator\HTMLValidator;
 
+/**
+ * Simple class for a W3C HTML Validator Response.
+ *
+ * @license  http://www.opensource.org/licenses/bsd-license.php BSD
+ */
 class Response
 {
     /**
