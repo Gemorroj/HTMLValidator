@@ -103,7 +103,7 @@ class HTMLValidator
      * 
      * @return Response object HTMLValidator\Response
      */
-    public function validate($uri)
+    public function validateUri($uri)
     {
         $query = http_build_query(array_merge(
             $this->getOptions()->buildOptions(),
