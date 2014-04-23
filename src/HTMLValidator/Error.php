@@ -6,7 +6,7 @@
  *
  * @license  http://www.opensource.org/licenses/bsd-license.php BSD
  */
-namespace HTMLValidator\HTMLValidator;
+namespace HTMLValidator;
 
 /**
  * The message class holds an error response from the W3 validator.

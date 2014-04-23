@@ -7,7 +7,7 @@
  *
  * @license  http://www.opensource.org/licenses/bsd-license.php BSD
  */
-namespace HTMLValidator\HTMLValidator;
+namespace HTMLValidator;
 
 /**
  * Simple class for a W3C HTML Validator Response.

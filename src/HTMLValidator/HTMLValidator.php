@@ -336,13 +336,13 @@ class HTMLValidator
      * @param string $uri
      * @param resource $context
      * @return string
-     * @throws HTMLValidator\Exception
+     * @throws Exception
      */
     protected function sendRequest($uri, $context = null)
     {
         $data = file_get_contents($uri, null, $context);
         if ($data === false) {
-            throw new HTMLValidator\Exception('Error send request');
+            throw new Exception('Error send request');
         }
 
         return $data;
@@ -356,7 +356,7 @@ class HTMLValidator
      *
      * @param string $uri The address to the page to validate ex: http://example.com/
      * 
-     * @return HTMLValidator\Response object HTMLValidator\Response
+     * @return Response object HTMLValidator\Response
      */
     public function validate($uri)
     {
@@ -376,22 +376,22 @@ class HTMLValidator
      * 
      * @param string $file file to be validated.
      *
-     * @throws HTMLValidator\Exception
+     * @throws Exception
      *
-     * @return HTMLValidator\Response object HTMLValidator\Response
+     * @return Response object HTMLValidator\Response
      */
     public function validateFile($file)
     {
         if (file_exists($file) !== true) {
-            throw new HTMLValidator\Exception('File not found');
+            throw new Exception('File not found');
         }
         if (is_readable($file) !== true) {
-            throw new HTMLValidator\Exception('File not readable');
+            throw new Exception('File not readable');
         }
 
         $data = file_get_contents($file);
         if ($data === false) {
-            throw new HTMLValidator\Exception('Failed get file');
+            throw new Exception('Failed get file');
         }
 
         return $this->validateFragment($data);
@@ -402,7 +402,7 @@ class HTMLValidator
      * 
      * @param string $html full html document fragment
      * 
-     * @return HTMLValidator\Response object HTMLValidator\Response
+     * @return Response object HTMLValidator\Response
      */
     public function validateFragment($html)
     {
@@ -431,19 +431,19 @@ class HTMLValidator
      *
      * @param string $xml The raw soap12 XML response from the validator.
      * 
-     * @return HTMLValidator\Response object HTMLValidator\Response
+     * @return Response object HTMLValidator\Response
      *
-     * @throws HTMLValidator\Exception
+     * @throws Exception
      */
     protected function parseSOAP12Response($xml)
     {
         $doc = new \DOMDocument('1.0', 'UTF-8');
 
         if ($doc->loadXML($xml) == false) {
-            throw new HTMLValidator\Exception('Failed load xml');
+            throw new Exception('Failed load xml');
         }
 
-        $response = new HTMLValidator\Response();
+        $response = new Response();
 
         // Get the standard CDATA elements
         foreach (array('uri', 'checkedby', 'doctype', 'charset') as $var) {
@@ -464,12 +464,12 @@ class HTMLValidator
         if (!$response->isValidity()) {
             $errors = $doc->getElementsByTagName('error');
             foreach ($errors as $error) {
-                $response->addError(new HTMLValidator\Error($error));
+                $response->addError(new Error($error));
             }
         }
         $warnings = $doc->getElementsByTagName('warning');
         foreach ($warnings as $warning) {
-            $response->addWarning(new HTMLValidator\Warning($warning));
+            $response->addWarning(new Warning($warning));
         }
 
         return $response;
