@@ -364,7 +364,15 @@ class HTMLValidator
             $this->buildOptions(),
             array('uri' => $uri)
         ));
-        $data = $this->sendRequest($this->validatorUri . '?' . $query);
+
+        $context = stream_context_create(array(
+            'http' => array(
+                'method' => 'GET',
+                'header' => 'User-Agent: HTMLValidator',
+            )
+        ));
+
+        $data = $this->sendRequest($this->validatorUri . '?' . $query, $context);
 
         return $this->parseSOAP12Response($data);
     }
@@ -414,8 +422,8 @@ class HTMLValidator
         $context = stream_context_create(array(
             'http' => array(
                 'method' => 'POST',
-                'header' => "Content-Type: application/x-www-form-urlencoded\r\n",
-                'content' => $query
+                'header' => "Content-Type: application/x-www-form-urlencoded\r\nUser-Agent: HTMLValidator",
+                'content' => $query,
             )
         ));
 
