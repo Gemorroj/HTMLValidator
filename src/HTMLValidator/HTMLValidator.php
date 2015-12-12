@@ -192,7 +192,7 @@ class HTMLValidator
     {
         $doc = new \DOMDocument('1.0', 'UTF-8');
 
-        if ($doc->loadXML($xml) == false) {
+        if ($doc->loadXML($xml) === false) {
             throw new Exception('Failed load xml');
         }
 
@@ -208,7 +208,7 @@ class HTMLValidator
 
         // Handle the bool element validity
         $element = $doc->getElementsByTagName('validity');
-        if ($element->length && $element->item(0)->nodeValue == 'true') {
+        if ($element->length && $element->item(0)->nodeValue === 'true') {
             $response->setValidity(true);
         } else {
             $response->setValidity(false);
