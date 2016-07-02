@@ -108,7 +108,7 @@ class Options
     /**
      * @param string $charset
      *
-     * @return HTMLValidator
+     * @return Options
      */
     public function setCharset($charset)
     {
@@ -128,7 +128,7 @@ class Options
     /**
      * @param string $doctype
      *
-     * @return HTMLValidator
+     * @return Options
      */
     public function setDoctype($doctype)
     {
@@ -148,7 +148,7 @@ class Options
     /**
      * @param boolean $fbc
      *
-     * @return HTMLValidator
+     * @return Options
      */
     public function setFbc($fbc)
     {
@@ -168,7 +168,7 @@ class Options
     /**
      * @param boolean $fbd
      *
-     * @return HTMLValidator
+     * @return Options
      */
     public function setFbd($fbd)
     {
@@ -188,7 +188,7 @@ class Options
     /**
      * @param boolean $outline
      *
-     * @return HTMLValidator
+     * @return Options
      */
     public function setOutline($outline)
     {
@@ -208,7 +208,7 @@ class Options
     /**
      * @param mixed $output
      *
-     * @return HTMLValidator
+     * @return Options
      */
     public function setOutput($output)
     {
@@ -228,7 +228,7 @@ class Options
     /**
      * @param boolean $ss
      *
-     * @return HTMLValidator
+     * @return Options
      */
     public function setSs($ss)
     {
@@ -248,7 +248,7 @@ class Options
     /**
      * @param boolean $verbose
      *
-     * @return HTMLValidator
+     * @return Options
      */
     public function setVerbose($verbose)
     {
