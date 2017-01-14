@@ -1,18 +1,7 @@
 <?php
-/**
- * This file provides a base class for messages from a W3C validator.
- *
- * PHP versions 5
- *
- * @license  http://www.opensource.org/licenses/bsd-license.php BSD
- */
+
 namespace HTMLValidator;
 
-/**
- * The message class holds a response from the W3 validator.
- *
- * @license  http://www.opensource.org/licenses/bsd-license.php BSD
- */
 abstract class Message
 {
     /**

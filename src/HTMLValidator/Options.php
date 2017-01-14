@@ -1,19 +1,7 @@
 <?php
-/**
- * This file contains the base class for utilizing an instance of the
- * W3 HTML Validator.
- *
- * PHP versions 5
- *
- * @license  http://www.opensource.org/licenses/bsd-license.php BSD
- */
+
 namespace HTMLValidator;
 
-/**
- * A simple class for utilizing the W3C HTML Validator service.
- *
- * @license  http://www.opensource.org/licenses/bsd-license.php BSD
- */
 class Options
 {
     /**
