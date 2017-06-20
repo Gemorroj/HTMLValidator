@@ -1,5 +1,5 @@
 <?php
-namespace Tests\HTMLValidator;
+namespace HTMLValidator\Tests;
 
 use HTMLValidator\HTMLValidator;
 
