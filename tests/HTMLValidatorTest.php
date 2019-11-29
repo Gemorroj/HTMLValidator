@@ -1,11 +1,11 @@
 <?php
 namespace HTMLValidator\Tests;
 
-use HTMLValidator\HTMLValidator;
+use PHPUnit\Framework\TestCase;
 
-class HTMLValidatorTest extends \PHPUnit_Framework_TestCase
+class HTMLValidatorTest extends TestCase
 {
-    public function testFake()
+    public function testFake(): void
     {
         self::markTestSkipped('Not implemented yet');
     }

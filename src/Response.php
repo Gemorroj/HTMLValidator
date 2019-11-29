@@ -6,8 +6,8 @@ class Response
 {
     /**
      * the address of the document validated
-     * 
-     * Will (likely?) be upload://Form Submission  
+     *
+     * Will (likely?) be upload://Form Submission
      * if an uploaded document or fragment was validated. In EARL terms, this is
      * the TestSubject.
      * @var string
@@ -34,7 +34,7 @@ class Response
     protected $charset;
     
     /**
-     * Whether or not the document validated passed or not formal validation 
+     * Whether or not the document validated passed or not formal validation
      * (true|false boolean)
      * @var bool
      */
@@ -44,13 +44,13 @@ class Response
      * Array of Error objects (if applicable)
      * @var Error[]
      */
-    protected $errors = array();
+    protected $errors = [];
     
     /**
      * Array of Warning objects (if applicable)
      * @var Warning[]
      */
-    protected $warnings = array();
+    protected $warnings = [];
 
     /**
      * @return string

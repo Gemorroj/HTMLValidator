@@ -6,7 +6,7 @@ class HTMLValidator
 {
     /**
      * URI to the w3 validator.
-     * 
+     *
      * @var string
      */
     protected $validatorUri = 'http://validator.w3.org/check';
@@ -68,12 +68,12 @@ class HTMLValidator
     /**
      * @param string $uri
      * @param resource $context
-     * @return string
      * @throws Exception
+     * @return string
      */
     protected function sendRequest($uri, $context = null)
     {
-        $data = file_get_contents($uri, null, $context);
+        $data = \file_get_contents($uri, null, $context);
         if ($data === false) {
             throw new Exception('Error send request');
         }
@@ -83,27 +83,27 @@ class HTMLValidator
     
     /**
      * Validates a given URI
-     * 
-     * Executes the validator using the current parameters and returns a Response 
+     *
+     * Executes the validator using the current parameters and returns a Response
      * object on success.
      *
      * @param string $uri The address to the page to validate ex: http://example.com/
-     * 
+     *
      * @return Response object HTMLValidator\Response
      */
     public function validateUri($uri)
     {
-        $query = http_build_query(array_merge(
+        $query = \http_build_query(\array_merge(
             $this->getOptions()->buildOptions(),
-            array('uri' => $uri)
+            ['uri' => $uri]
         ));
 
-        $context = stream_context_create(array(
-            'http' => array(
+        $context = \stream_context_create([
+            'http' => [
                 'method' => 'GET',
                 'header' => 'User-Agent: HTMLValidator',
-            )
-        ));
+            ]
+        ]);
 
         $data = $this->sendRequest($this->validatorUri . '?' . $query, $context);
 
@@ -112,9 +112,9 @@ class HTMLValidator
     
     /**
      * Validates the local file
-     * 
+     *
      * Requests validation on the local file, from an instance of the W3C validator.
-     * 
+     *
      * @param string $file file to be validated.
      *
      * @throws Exception
@@ -123,14 +123,14 @@ class HTMLValidator
      */
     public function validateFile($file)
     {
-        if (file_exists($file) !== true) {
+        if (\file_exists($file) !== true) {
             throw new Exception('File not found');
         }
-        if (is_readable($file) !== true) {
+        if (\is_readable($file) !== true) {
             throw new Exception('File not readable');
         }
 
-        $data = file_get_contents($file);
+        $data = \file_get_contents($file);
         if ($data === false) {
             throw new Exception('Failed get file');
         }
@@ -140,25 +140,25 @@ class HTMLValidator
     
     /**
      * Validate an html string
-     * 
+     *
      * @param string $html full html document fragment
-     * 
+     *
      * @return Response object HTMLValidator\Response
      */
     public function validateFragment($html)
     {
-        $query = http_build_query(array_merge(
+        $query = \http_build_query(\array_merge(
             $this->getOptions()->buildOptions(),
-            array('fragment' => $html)
+            ['fragment' => $html]
         ));
 
-        $context = stream_context_create(array(
-            'http' => array(
+        $context = \stream_context_create([
+            'http' => [
                 'method' => 'POST',
                 'header' => "Content-Type: application/x-www-form-urlencoded\r\nUser-Agent: HTMLValidator",
                 'content' => $query,
-            )
-        ));
+            ]
+        ]);
 
         $data = $this->sendRequest($this->validatorUri, $context);
 
@@ -167,14 +167,14 @@ class HTMLValidator
     
     /**
      * Parse an XML response from the validator
-     * 
+     *
      * This function parses a SOAP 1.2 response xml string from the validator.
      *
      * @param string $xml The raw soap12 XML response from the validator.
-     * 
-     * @return Response object HTMLValidator\Response
      *
      * @throws Exception
+     * @return Response object HTMLValidator\Response
+     *
      */
     protected function parseSOAP12Response($xml)
     {
@@ -187,10 +187,10 @@ class HTMLValidator
         $response = new Response();
 
         // Get the standard CDATA elements
-        foreach (array('uri', 'checkedby', 'doctype', 'charset') as $var) {
+        foreach (['uri', 'checkedby', 'doctype', 'charset'] as $var) {
             $element = $doc->getElementsByTagName($var);
             if ($element->length) {
-                $response->{'set' . ucfirst($var)}($element->item(0)->nodeValue);
+                $response->{'set' . \ucfirst($var)}($element->item(0)->nodeValue);
             }
         }
 

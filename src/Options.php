@@ -250,7 +250,7 @@ class Options
      */
     public function buildOptions()
     {
-        return array(
+        return [
             'charset' => $this->getCharset(),
             'fbc' => $this->isFbc() ? '1' : '0',
             'doctype' => $this->getDoctype(),
@@ -259,6 +259,6 @@ class Options
             'ss' => $this->isSs() ? '1' : '0',
             'outline' => $this->isOutline() ? '1' : '0',
             'output' => $this->getOutput()
-        );
+        ];
     }
 }

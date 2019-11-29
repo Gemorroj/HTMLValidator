@@ -6,7 +6,7 @@ abstract class Message
 {
     /**
      * line corresponding to the message
-     * 
+     *
      * Within the source code of the validated document, refers to the line which
      * caused this message.
      * @var int
@@ -15,7 +15,7 @@ abstract class Message
     
     /**
      * column corresponding to the message
-     * 
+     *
      * Within the source code of the validated document, refers to the column within
      * the line for the message.
      * @var int
@@ -30,7 +30,7 @@ abstract class Message
     
     /**
      * Unique ID for this message
-     * 
+     *
      * not implemented yet. should be the number of the error, as addressed
      * internally by the validator
      * @var int
@@ -39,7 +39,7 @@ abstract class Message
     
     /**
      * Explanation for this message.
-     * 
+     *
      * HTML snippet which describes the message, usually with information on
      * how to correct the problem.
      * @var string
@@ -48,8 +48,8 @@ abstract class Message
     
     /**
      * Source which caused the message.
-     * 
-     * the snippet of HTML code which invoked the message to give the 
+     *
+     * the snippet of HTML code which invoked the message to give the
      * context of the e
      * @var string
      */
@@ -183,10 +183,10 @@ abstract class Message
     public function __construct(\DOMElement $node = null)
     {
         if ($node) {
-            foreach (get_class_vars(__CLASS__) as $var => $val) {
+            foreach (\get_class_vars(__CLASS__) as $var => $val) {
                 $element = $node->getElementsByTagName($var);
                 if ($element->length) {
-                    $this->{'set' . ucfirst($var)}($element->item(0)->nodeValue);
+                    $this->{'set' . \ucfirst($var)}($element->item(0)->nodeValue);
                 }
             }
         }
