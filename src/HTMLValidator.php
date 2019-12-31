@@ -16,48 +16,29 @@ class HTMLValidator
      */
     protected $options;
 
-    /**
-     * @param Options $options
-     */
     public function __construct(Options $options = null)
     {
-        $this->setOptions($options === null ? new Options() : $options);
+        $this->setOptions($options ?: new Options());
     }
 
-    /**
-     * @return Options
-     */
-    public function getOptions()
+    public function getOptions(): Options
     {
         return $this->options;
     }
 
-    /**
-     * @param Options $options
-     *
-     * @return HTMLValidator
-     */
-    public function setOptions(Options $options)
+    public function setOptions(Options $options): self
     {
         $this->options = $options;
 
         return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getValidatorUri()
+    public function getValidatorUri(): string
     {
         return $this->validatorUri;
     }
 
-    /**
-     * @param string $validatorUri
-     *
-     * @return HTMLValidator
-     */
-    public function setValidatorUri($validatorUri)
+    public function setValidatorUri(string $validatorUri): self
     {
         $this->validatorUri = $validatorUri;
 
@@ -71,7 +52,7 @@ class HTMLValidator
      * @throws Exception
      * @return string
      */
-    protected function sendRequest($uri, $context = null)
+    protected function sendRequest(string $uri, $context = null): string
     {
         $data = \file_get_contents($uri, null, $context);
         if ($data === false) {
@@ -89,9 +70,10 @@ class HTMLValidator
      *
      * @param string $uri The address to the page to validate ex: http://example.com/
      *
+     * @throws Exception
      * @return Response object HTMLValidator\Response
      */
-    public function validateUri($uri)
+    public function validateUri(string $uri): Response
     {
         $query = \http_build_query(\array_merge(
             $this->getOptions()->buildOptions(),
@@ -118,10 +100,9 @@ class HTMLValidator
      * @param string $file file to be validated.
      *
      * @throws Exception
-     *
      * @return Response object HTMLValidator\Response
      */
-    public function validateFile($file)
+    public function validateFile(string $file): Response
     {
         if (\file_exists($file) !== true) {
             throw new Exception('File not found');
@@ -143,9 +124,10 @@ class HTMLValidator
      *
      * @param string $html full html document fragment
      *
+     * @throws Exception
      * @return Response object HTMLValidator\Response
      */
-    public function validateFragment($html)
+    public function validateFragment(string $html): Response
     {
         $query = \http_build_query(\array_merge(
             $this->getOptions()->buildOptions(),
@@ -176,7 +158,7 @@ class HTMLValidator
      * @return Response object HTMLValidator\Response
      *
      */
-    protected function parseSOAP12Response($xml)
+    protected function parseSOAP12Response(string $xml): Response
     {
         $doc = new \DOMDocument('1.0', 'UTF-8');
 
