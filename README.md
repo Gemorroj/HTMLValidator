@@ -1,6 +1,6 @@
 # Port PEAR package [HTMLValidator](http://pear.php.net/package/Services_W3C_HTMLValidator)
 
-[![Build Status](https://secure.travis-ci.org/Gemorroj/HTMLValidator.png?branch=master)](https://travis-ci.org/Gemorroj/HTMLValidator)
+[![Continuous Integration](https://github.com/Gemorroj/HTMLValidator/workflows/Continuous%20Integration/badge.svg?branch=master)](https://github.com/Gemorroj/HTMLValidator/actions?query=workflow%3A%22Continuous+Integration%22)
 
 
 ### Not working now
