@@ -5,7 +5,7 @@ namespace HTMLValidator;
 class Options
 {
     /**
-     * Output format
+     * Output format.
      *
      * Triggers the various outputs formats of the validator. If unset, the usual
      * Web format will be sent. If set to soap12, the SOAP1.2 interface will be
@@ -14,73 +14,78 @@ class Options
     protected $output = 'soap12';
 
     /**
-     * Character encoding
+     * Character encoding.
      *
      * Character encoding override: Specify the character encoding to use when
      * parsing the document. When used with the auxiliary parameter fbc set to 1,
      * the given encoding will only be used as a fallback value, in case the charset
      * is absent or unrecognized. Note that this parameter is ignored if validating
      * a fragment with the direct input interface.
+     *
      * @var string
      */
     protected $charset;
 
     /**
-     * Fall Back Character Set
+     * Fall Back Character Set.
      *
      * When no character encoding is detected in the document, use the value in
      * $charset as the fallback character set.
      *
      * @var bool
      */
-    protected $fbc;
+    protected $fbc = false;
 
     /**
-     * Document type
+     * Document type.
      *
      * Document Type override: Specify the Document Type (DOCTYPE) to use when
      * parsing the document. When used with the auxiliary parameter fbd set to 1,
      * the given document type will only be used as a fallback value, in case the
      * document's DOCTYPE declaration is missing or unrecognized.
+     *
      * @var string
      */
     protected $doctype;
 
     /**
-     * Fall back doctype
+     * Fall back doctype.
      *
      * When set to 1, use the value stored in $doctype when the document type
      * cannot be automatically determined.
      *
      * @var bool
      */
-    protected $fbd;
+    protected $fbd = false;
 
     /**
-     * Verbose output
+     * Verbose output.
      *
      * In the web interface, when set to 1, will make error messages, explanations
      * and other diagnostics more verbose.
      * In SOAP output, does not have any impact.
+     *
      * @var bool
      */
     protected $verbose = false;
 
     /**
-     * Show source
+     * Show source.
      *
      * In the web interface, triggers the display of the source after the validation
      * results. In SOAP output, does not have any impact.
+     *
      * @var bool
      */
     protected $ss = false;
 
     /**
-     * outline
+     * outline.
      *
      * In the web interface, when set to 1, triggers the display of the document
      * outline after the validation results. In SOAP output, does not have any
      * impact.
+     *
      * @var bool
      */
     protected $outline = false;
@@ -98,7 +103,7 @@ class Options
      *
      * @return Options
      */
-    public function setCharset($charset)
+    public function setCharset($charset): self
     {
         $this->charset = $charset;
 
@@ -118,7 +123,7 @@ class Options
      *
      * @return Options
      */
-    public function setDoctype($doctype)
+    public function setDoctype($doctype): self
     {
         $this->doctype = $doctype;
 
@@ -126,7 +131,7 @@ class Options
     }
 
     /**
-     * @return boolean
+     * @return bool
      */
     public function isFbc()
     {
@@ -134,11 +139,11 @@ class Options
     }
 
     /**
-     * @param boolean $fbc
+     * @param bool $fbc
      *
      * @return Options
      */
-    public function setFbc($fbc)
+    public function setFbc($fbc): self
     {
         $this->fbc = $fbc;
 
@@ -146,7 +151,7 @@ class Options
     }
 
     /**
-     * @return boolean
+     * @return bool
      */
     public function isFbd()
     {
@@ -154,7 +159,7 @@ class Options
     }
 
     /**
-     * @param boolean $fbd
+     * @param bool $fbd
      *
      * @return Options
      */
@@ -166,7 +171,7 @@ class Options
     }
 
     /**
-     * @return boolean
+     * @return bool
      */
     public function isOutline()
     {
@@ -174,11 +179,11 @@ class Options
     }
 
     /**
-     * @param boolean $outline
+     * @param bool $outline
      *
      * @return Options
      */
-    public function setOutline($outline)
+    public function setOutline($outline): self
     {
         $this->outline = $outline;
 
@@ -198,7 +203,7 @@ class Options
      *
      * @return Options
      */
-    public function setOutput($output)
+    public function setOutput($output): self
     {
         $this->output = $output;
 
@@ -206,7 +211,7 @@ class Options
     }
 
     /**
-     * @return boolean
+     * @return bool
      */
     public function isSs()
     {
@@ -214,11 +219,11 @@ class Options
     }
 
     /**
-     * @param boolean $ss
+     * @param bool $ss
      *
      * @return Options
      */
-    public function setSs($ss)
+    public function setSs($ss): self
     {
         $this->ss = $ss;
 
@@ -226,7 +231,7 @@ class Options
     }
 
     /**
-     * @return boolean
+     * @return bool
      */
     public function isVerbose()
     {
@@ -234,21 +239,18 @@ class Options
     }
 
     /**
-     * @param boolean $verbose
+     * @param bool $verbose
      *
      * @return Options
      */
-    public function setVerbose($verbose)
+    public function setVerbose($verbose): self
     {
         $this->verbose = $verbose;
 
         return $this;
     }
 
-    /**
-     * @return array
-     */
-    public function buildOptions()
+    public function buildOptions(): array
     {
         return [
             'charset' => $this->getCharset(),
@@ -258,7 +260,7 @@ class Options
             'verbose' => $this->isVerbose() ? '1' : '0',
             'ss' => $this->isSs() ? '1' : '0',
             'outline' => $this->isOutline() ? '1' : '0',
-            'output' => $this->getOutput()
+            'output' => $this->getOutput(),
         ];
     }
 }

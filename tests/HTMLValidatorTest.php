@@ -1,12 +1,25 @@
 <?php
+
 namespace HTMLValidator\Tests;
 
+use HTMLValidator\HTMLValidator;
 use PHPUnit\Framework\TestCase;
 
 class HTMLValidatorTest extends TestCase
 {
-    public function testFake(): void
+    public function testValidHTML(): void
     {
-        self::markTestSkipped('Not implemented yet');
+        $css = '<html><body></body></html>';
+        $validator = new HTMLValidator();
+        $result = $validator->validateFragment($css);
+        self::assertEmpty($result->getErrors());
+    }
+
+    public function testInvalidHTML(): void
+    {
+        $css = '<html><body> <test> </body></html>';
+        $validator = new HTMLValidator();
+        $result = $validator->validateFragment($css);
+        self::assertNotEmpty($result->getErrors());
     }
 }

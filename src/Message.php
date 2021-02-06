@@ -5,52 +5,58 @@ namespace HTMLValidator;
 abstract class Message
 {
     /**
-     * line corresponding to the message
+     * line corresponding to the message.
      *
      * Within the source code of the validated document, refers to the line which
      * caused this message.
+     *
      * @var int
      */
     protected $line;
-    
+
     /**
-     * column corresponding to the message
+     * column corresponding to the message.
      *
      * Within the source code of the validated document, refers to the column within
      * the line for the message.
+     *
      * @var int
      */
     protected $col;
-    
+
     /**
-     * The actual message
+     * The actual message.
+     *
      * @var string
      */
     protected $message;
-    
+
     /**
-     * Unique ID for this message
+     * Unique ID for this message.
      *
      * not implemented yet. should be the number of the error, as addressed
      * internally by the validator
+     *
      * @var int
      */
     protected $messageid;
-    
+
     /**
      * Explanation for this message.
      *
      * HTML snippet which describes the message, usually with information on
      * how to correct the problem.
+     *
      * @var string
      */
     protected $explanation;
-    
+
     /**
      * Source which caused the message.
      *
      * the snippet of HTML code which invoked the message to give the
      * context of the e
+     *
      * @var string
      */
     protected $source;
@@ -88,7 +94,7 @@ abstract class Message
      *
      * @return Message
      */
-    public function setExplanation($explanation)
+    public function setExplanation($explanation): self
     {
         $this->explanation = $explanation;
 
@@ -108,7 +114,7 @@ abstract class Message
      *
      * @return Message
      */
-    public function setLine($line)
+    public function setLine($line): self
     {
         $this->line = $line;
 
@@ -128,7 +134,7 @@ abstract class Message
      *
      * @return Message
      */
-    public function setMessage($message)
+    public function setMessage($message): self
     {
         $this->message = $message;
 
@@ -148,7 +154,7 @@ abstract class Message
      *
      * @return Message
      */
-    public function setMessageid($messageid)
+    public function setMessageid($messageid): self
     {
         $this->messageid = $messageid;
 
@@ -168,7 +174,7 @@ abstract class Message
      *
      * @return Message
      */
-    public function setSource($source)
+    public function setSource($source): self
     {
         $this->source = $source;
 
@@ -176,9 +182,9 @@ abstract class Message
     }
 
     /**
-     * Constructor for a response message
+     * Constructor for a response message.
      *
-     * @param \DOMElement $node A dom document node.
+     * @param \DOMElement $node a dom document node
      */
     public function __construct(\DOMElement $node = null)
     {
@@ -186,7 +192,7 @@ abstract class Message
             foreach (\get_class_vars(__CLASS__) as $var => $val) {
                 $element = $node->getElementsByTagName($var);
                 if ($element->length) {
-                    $this->{'set' . \ucfirst($var)}($element->item(0)->nodeValue);
+                    $this->{'set'.\ucfirst($var)}($element->item(0)->nodeValue);
                 }
             }
         }

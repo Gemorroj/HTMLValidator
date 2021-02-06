@@ -5,49 +5,56 @@ namespace HTMLValidator;
 class Response
 {
     /**
-     * the address of the document validated
+     * the address of the document validated.
      *
      * Will (likely?) be upload://Form Submission
      * if an uploaded document or fragment was validated. In EARL terms, this is
      * the TestSubject.
+     *
      * @var string
      */
     protected $uri;
-    
+
     /**
      * Location of the service which provided the validation result. In EARL terms,
      * this is the Assertor.
+     *
      * @var string
      */
     protected $checkedby;
-    
+
     /**
-     * Detected (or forced) Document Type for the validated document
+     * Detected (or forced) Document Type for the validated document.
+     *
      * @var string
      */
     protected $doctype;
-    
+
     /**
-     * Detected (or forced) Character Encoding for the validated document
+     * Detected (or forced) Character Encoding for the validated document.
+     *
      * @var string
      */
     protected $charset;
-    
+
     /**
      * Whether or not the document validated passed or not formal validation
-     * (true|false boolean)
+     * (true|false boolean).
+     *
      * @var bool
      */
-    protected $validity;
-    
+    protected $validity = false;
+
     /**
-     * Array of Error objects (if applicable)
+     * Array of Error objects (if applicable).
+     *
      * @var Error[]
      */
     protected $errors = [];
-    
+
     /**
-     * Array of Warning objects (if applicable)
+     * Array of Warning objects (if applicable).
+     *
      * @var Warning[]
      */
     protected $warnings = [];
@@ -65,7 +72,7 @@ class Response
      *
      * @return Response
      */
-    public function setCharset($charset)
+    public function setCharset($charset): self
     {
         $this->charset = $charset;
 
@@ -85,7 +92,7 @@ class Response
      *
      * @return Response
      */
-    public function setCheckedby($checkedby)
+    public function setCheckedby($checkedby): self
     {
         $this->checkedby = $checkedby;
 
@@ -105,7 +112,7 @@ class Response
      *
      * @return Response
      */
-    public function setDoctype($doctype)
+    public function setDoctype($doctype): self
     {
         $this->doctype = $doctype;
 
@@ -115,7 +122,7 @@ class Response
     /**
      * @return Error[]
      */
-    public function getErrors()
+    public function getErrors(): array
     {
         return $this->errors;
     }
@@ -145,7 +152,7 @@ class Response
      *
      * @return Response
      */
-    public function setUri($uri)
+    public function setUri($uri): self
     {
         $this->uri = $uri;
 
@@ -153,7 +160,7 @@ class Response
     }
 
     /**
-     * @return boolean
+     * @return bool
      */
     public function isValidity()
     {
@@ -161,11 +168,11 @@ class Response
     }
 
     /**
-     * @param boolean $validity
+     * @param bool $validity
      *
      * @return Response
      */
-    public function setValidity($validity)
+    public function setValidity($validity): self
     {
         $this->validity = $validity;
 
@@ -175,7 +182,7 @@ class Response
     /**
      * @return Warning[]
      */
-    public function getWarnings()
+    public function getWarnings(): array
     {
         return $this->warnings;
     }
@@ -193,11 +200,9 @@ class Response
     }
 
     /**
-     * @param Error $error
-     *
      * @return Response
      */
-    public function addError(Error $error)
+    public function addError(Error $error): self
     {
         $this->errors[] = $error;
 
@@ -205,11 +210,9 @@ class Response
     }
 
     /**
-     * @param Warning $warning
-     *
      * @return Response
      */
-    public function addWarning(Warning $warning)
+    public function addWarning(Warning $warning): self
     {
         $this->warnings[] = $warning;
 

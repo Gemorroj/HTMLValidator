@@ -45,25 +45,23 @@ class HTMLValidator
         return $this;
     }
 
-
     /**
-     * @param string $uri
      * @param resource $context
+     *
      * @throws Exception
-     * @return string
      */
     protected function sendRequest(string $uri, $context = null): string
     {
         $data = \file_get_contents($uri, null, $context);
-        if ($data === false) {
+        if (false === $data) {
             throw new Exception('Error send request');
         }
 
         return $data;
     }
-    
+
     /**
-     * Validates a given URI
+     * Validates a given URI.
      *
      * Executes the validator using the current parameters and returns a Response
      * object on success.
@@ -71,6 +69,7 @@ class HTMLValidator
      * @param string $uri The address to the page to validate ex: http://example.com/
      *
      * @throws Exception
+     *
      * @return Response object HTMLValidator\Response
      */
     public function validateUri(string $uri): Response
@@ -84,47 +83,49 @@ class HTMLValidator
             'http' => [
                 'method' => 'GET',
                 'header' => 'User-Agent: HTMLValidator',
-            ]
+            ],
         ]);
 
-        $data = $this->sendRequest($this->validatorUri . '?' . $query, $context);
+        $data = $this->sendRequest($this->validatorUri.'?'.$query, $context);
 
         return $this->parseSOAP12Response($data);
     }
-    
+
     /**
-     * Validates the local file
+     * Validates the local file.
      *
      * Requests validation on the local file, from an instance of the W3C validator.
      *
-     * @param string $file file to be validated.
+     * @param string $file file to be validated
      *
      * @throws Exception
+     *
      * @return Response object HTMLValidator\Response
      */
     public function validateFile(string $file): Response
     {
-        if (\file_exists($file) !== true) {
+        if (true !== \file_exists($file)) {
             throw new Exception('File not found');
         }
-        if (\is_readable($file) !== true) {
+        if (true !== \is_readable($file)) {
             throw new Exception('File not readable');
         }
 
         $data = \file_get_contents($file);
-        if ($data === false) {
+        if (false === $data) {
             throw new Exception('Failed get file');
         }
 
         return $this->validateFragment($data);
     }
-    
+
     /**
-     * Validate an html string
+     * Validate an html string.
      *
      * @param string $html full html document fragment
      *
      * @throws Exception
+     *
      * @return Response object HTMLValidator\Response
      */
     public function validateFragment(string $html): Response
@@ -139,30 +140,30 @@ class HTMLValidator
                 'method' => 'POST',
                 'header' => "Content-Type: application/x-www-form-urlencoded\r\nUser-Agent: HTMLValidator",
                 'content' => $query,
-            ]
+            ],
         ]);
 
         $data = $this->sendRequest($this->validatorUri, $context);
 
         return $this->parseSOAP12Response($data);
     }
-    
+
     /**
-     * Parse an XML response from the validator
+     * Parse an XML response from the validator.
      *
      * This function parses a SOAP 1.2 response xml string from the validator.
      *
-     * @param string $xml The raw soap12 XML response from the validator.
+     * @param string $xml the raw soap12 XML response from the validator
      *
      * @throws Exception
-     * @return Response object HTMLValidator\Response
      *
+     * @return Response object HTMLValidator\Response
      */
     protected function parseSOAP12Response(string $xml): Response
     {
         $doc = new \DOMDocument('1.0', 'UTF-8');
 
-        if ($doc->loadXML($xml) === false) {
+        if (false === $doc->loadXML($xml)) {
             throw new Exception('Failed load xml');
         }
 
@@ -172,13 +173,13 @@ class HTMLValidator
         foreach (['uri', 'checkedby', 'doctype', 'charset'] as $var) {
             $element = $doc->getElementsByTagName($var);
             if ($element->length) {
-                $response->{'set' . \ucfirst($var)}($element->item(0)->nodeValue);
+                $response->{'set'.\ucfirst($var)}($element->item(0)->nodeValue);
             }
         }
 
         // Handle the bool element validity
         $element = $doc->getElementsByTagName('validity');
-        if ($element->length && $element->item(0)->nodeValue === 'true') {
+        if ($element->length && 'true' === $element->item(0)->nodeValue) {
             $response->setValidity(true);
         } else {
             $response->setValidity(false);
