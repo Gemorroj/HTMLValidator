@@ -14,3 +14,20 @@
 ```bash
 composer require gemorroj/htmlvalidator
 ```
+
+### Example:
+
+```php
+<?php
+use HTMLValidator\HTMLValidator;
+
+$validator = new HTMLValidator();
+$result = $validator->validateFragment('<html lang="en"><body> </body></html>');
+$result = $validator->validateFile('/path/to/file.html');
+$result = $validator->validateUri('http://example.com');
+
+var_dump($result->isValid());
+
+print_r($result->getErrors());
+print_r($result->getWarnings());
+```
