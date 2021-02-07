@@ -2,6 +2,14 @@
 
 namespace HTMLValidator;
 
+use Symfony\Component\HttpClient\HttpClient;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
+
 class HTMLValidator
 {
     /**
@@ -17,17 +25,22 @@ class HTMLValidator
     private $options;
 
     /**
-     * Default context for http request.
-     *
-     * @see https://www.php.net/manual/en/context.php
-     *
-     * @var array
+     * @var HttpClientInterface
      */
-    private $context = [];
+    private $httpClient;
 
-    public function __construct(Options $options = null)
+    public function __construct(Options $options = null, HttpClientInterface $httpClient = null)
     {
         $this->setOptions($options ?: new Options());
+        if (!$httpClient) {
+            $httpClient = HttpClient::createForBaseUri($this->getValidatorUri(), [
+                'headers' => [
+                    'User-Agent' => 'gemorroj/htmlvalidator',
+                    'Content-Type' => 'text/html; charset=UTF-8',
+                ],
+            ]);
+        }
+        $this->setHttpClient($httpClient);
     }
 
     public function getOptions(): Options
@@ -42,14 +55,14 @@ class HTMLValidator
         return $this;
     }
 
-    public function getContext(): array
+    public function getHttpClient(): HttpClientInterface
     {
-        return $this->context;
+        return $this->httpClient;
     }
 
-    public function setContext(array $context): self
+    public function setHttpClient(HttpClientInterface $httpClient): self
     {
-        $this->context = $context;
+        $this->httpClient = $httpClient;
 
         return $this;
     }
@@ -67,27 +80,6 @@ class HTMLValidator
     }
 
     /**
-     * @throws Exception
-     */
-    protected function sendRequest(string $uri, array $context): string
-    {
-        $context = \array_merge($this->getContext(), $context);
-
-        if (isset($context['http']['header'])) {
-            $context['http']['header'] .= "\r\nUser-Agent: gemorroj/htmlvalidator";
-        } else {
-            $context['http']['header'] = 'User-Agent: gemorroj/htmlvalidator';
-        }
-
-        $data = @\file_get_contents($uri, false, \stream_context_create($context));
-        if (false === $data) {
-            throw new Exception(\error_get_last()['message']);
-        }
-
-        return $data;
-    }
-
-    /**
      * Validates a given URI.
      *
      * Executes the validator using the current parameters and returns a Response
@@ -95,25 +87,23 @@ class HTMLValidator
      *
      * @param string $uri The address to the page to validate ex: http://example.com/
      *
-     * @throws Exception|\JsonException
+     * @throws Exception
+     * @throws DecodingExceptionInterface    When the body cannot be decoded to an array
+     * @throws TransportExceptionInterface   When a network error occurs
+     * @throws RedirectionExceptionInterface On a 3xx when $throw is true and the "max_redirects" option has been reached
+     * @throws ClientExceptionInterface      On a 4xx when $throw is true
+     * @throws ServerExceptionInterface      On a 5xx when $throw is true
      */
     public function validateUri(string $uri): Response
     {
-        $query = \http_build_query(\array_merge(
-            $this->getOptions()->buildOptions(),
-            ['doc' => $uri, 'out' => 'json', 'showsource' => 'yes']
-        ));
+        $response = $this->getHttpClient()->request('GET', '', [
+            'query' => \array_merge(
+                $this->getOptions()->buildOptions(),
+                ['doc' => $uri, 'out' => 'json', 'showsource' => 'yes']
+            ),
+        ]);
 
-        $context = [
-            'http' => [
-                'method' => 'GET',
-                'header' => 'Content-Type: text/html; charset=utf-8',
-            ],
-        ];
-
-        $data = $this->sendRequest($this->validatorUri.'?'.$query, $context);
-
-        return $this->parseJsonResponse($data);
+        return $this->parseResponse($response->toArray());
     }
 
     /**
@@ -121,27 +111,31 @@ class HTMLValidator
      *
      * Requests validation on the local file, from an instance of the W3C validator.
      *
-     * @param string $file file to be validated
+     * @param string $file path to file to be validated
      *
-     * @throws Exception|\JsonException
-     *
-     * @return Response object HTMLValidator\Response
+     * @throws Exception
+     * @throws DecodingExceptionInterface    When the body cannot be decoded to an array
+     * @throws TransportExceptionInterface   When a network error occurs
+     * @throws RedirectionExceptionInterface On a 3xx when $throw is true and the "max_redirects" option has been reached
+     * @throws ClientExceptionInterface      On a 4xx when $throw is true
+     * @throws ServerExceptionInterface      On a 5xx when $throw is true
      */
     public function validateFile(string $file): Response
     {
-        if (true !== \file_exists($file)) {
-            throw new Exception('File not found');
-        }
-        if (true !== \is_readable($file)) {
-            throw new Exception('File not readable');
-        }
-
-        $data = @\file_get_contents($file);
-        if (false === $data) {
+        $f = @\fopen($file, 'rb');
+        if (false === $f) {
             throw new Exception(\error_get_last()['message']);
         }
 
-        return $this->validateFragment($data);
+        $response = $this->getHttpClient()->request('POST', '', [
+            'body' => $f,
+            'query' => \array_merge(
+                $this->getOptions()->buildOptions(),
+                ['out' => 'json', 'showsource' => 'yes']
+            ),
+        ]);
+
+        return $this->parseResponse($response->toArray());
     }
 
     /**
@@ -149,28 +143,24 @@ class HTMLValidator
      *
      * @param string $html full html document fragment
      *
-     * @throws Exception|\JsonException
-     *
-     * @return Response object HTMLValidator\Response
+     * @throws Exception
+     * @throws DecodingExceptionInterface    When the body cannot be decoded to an array
+     * @throws TransportExceptionInterface   When a network error occurs
+     * @throws RedirectionExceptionInterface On a 3xx when $throw is true and the "max_redirects" option has been reached
+     * @throws ClientExceptionInterface      On a 4xx when $throw is true
+     * @throws ServerExceptionInterface      On a 5xx when $throw is true
      */
     public function validateFragment(string $html): Response
     {
-        $query = \http_build_query(\array_merge(
-            $this->getOptions()->buildOptions(),
-            ['out' => 'json', 'showsource' => 'yes']
-        ));
+        $response = $this->getHttpClient()->request('POST', '', [
+            'body' => $html,
+            'query' => \array_merge(
+                $this->getOptions()->buildOptions(),
+                ['out' => 'json', 'showsource' => 'yes']
+            ),
+        ]);
 
-        $context = [
-            'http' => [
-                'method' => 'POST',
-                'header' => 'Content-Type: text/html; charset=utf-8',
-                'content' => $html,
-            ],
-        ];
-
-        $data = $this->sendRequest($this->validatorUri.'?'.$query, $context);
-
-        return $this->parseJsonResponse($data);
+        return $this->parseResponse($response->toArray());
     }
 
     /**
@@ -178,14 +168,10 @@ class HTMLValidator
      *
      * This function parses a JSON response json string from the validator.
      *
-     * @param string $json the raw JSON response from the validator
-     *
-     * @throws Exception|\JsonException
+     * @throws Exception
      */
-    protected function parseJsonResponse(string $json): Response
+    protected function parseResponse(array $data): Response
     {
-        $data = \json_decode($json, true, 512, \JSON_THROW_ON_ERROR);
-
         $response = new Response();
 
         $response->setEncoding($data['source']['encoding'] ?? null);
