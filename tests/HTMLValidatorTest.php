@@ -15,8 +15,10 @@ class HTMLValidatorTest extends TestCase
         self::assertNotEmpty($result->getWarnings());
 
         self::assertFalse($result->isValid());
-        self::assertNull($result->getType());
-        self::assertNull($result->getEncoding());
+        self::assertSame('http://example.com', $result->getUri());
+        self::assertSame('text/html', $result->getType());
+        self::assertSame('UTF-8', $result->getEncoding());
+        self::assertStringContainsString('Example Domain', $result->getSource());
     }
 
     public function testValidHTMLFile(): void
@@ -27,8 +29,10 @@ class HTMLValidatorTest extends TestCase
         self::assertEmpty($result->getWarnings());
 
         self::assertTrue($result->isValid());
-        self::assertNull($result->getType());
-        self::assertNull($result->getEncoding());
+        self::assertNull($result->getUri());
+        self::assertSame('text/html', $result->getType());
+        self::assertSame('UTF-8', $result->getEncoding());
+        self::assertStringContainsString('test', $result->getSource());
     }
 
     public function testValidHTMLFragment(): void
@@ -40,21 +44,25 @@ class HTMLValidatorTest extends TestCase
         self::assertEmpty($result->getWarnings());
 
         self::assertTrue($result->isValid());
-        self::assertNull($result->getType());
-        self::assertNull($result->getEncoding());
+        self::assertNull($result->getUri());
+        self::assertSame('text/html', $result->getType());
+        self::assertSame('UTF-8', $result->getEncoding());
+        self::assertStringContainsString('test', $result->getSource());
     }
 
     public function testErrorHTMLFragment(): void
     {
-        $html = '<html lang="en"><body> </body></html>';
+        $html = '<html lang="en"><body>test</body></html>';
         $validator = new HTMLValidator();
         $result = $validator->validateFragment($html);
         self::assertCount(2, $result->getErrors());
         self::assertEmpty($result->getWarnings());
 
         self::assertFalse($result->isValid());
-        self::assertNull($result->getType());
-        self::assertNull($result->getEncoding());
+        self::assertNull($result->getUri());
+        self::assertSame('text/html', $result->getType());
+        self::assertSame('UTF-8', $result->getEncoding());
+        self::assertStringContainsString('test', $result->getSource());
 
         $error1 = $result->getErrors()[0];
 
@@ -75,7 +83,7 @@ class HTMLValidatorTest extends TestCase
         self::assertSame(22, $error2->getLastColumn());
         self::assertSame(17, $error2->getFirstColumn());
         self::assertSame('Element “head” is missing a required instance of child element “title”.', $error2->getMessage());
-        self::assertSame('lang="en"><body> </bod', $error2->getExtract());
+        self::assertSame('lang="en"><body>test</', $error2->getExtract());
         self::assertSame(10, $error2->getHiliteStart());
         self::assertSame(6, $error2->getHiliteLength());
         self::assertNull($error2->getUri());
@@ -90,8 +98,10 @@ class HTMLValidatorTest extends TestCase
         self::assertCount(1, $result->getWarnings());
 
         self::assertTrue($result->isValid());
-        self::assertNull($result->getType());
-        self::assertNull($result->getEncoding());
+        self::assertNull($result->getUri());
+        self::assertSame('text/html', $result->getType());
+        self::assertSame('UTF-8', $result->getEncoding());
+        self::assertStringContainsString('test', $result->getSource());
 
         $warning = $result->getWarnings()[0];
 

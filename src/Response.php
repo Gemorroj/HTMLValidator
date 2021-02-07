@@ -32,6 +32,13 @@ class Response
     private $encoding;
 
     /**
+     * The "code" string represents the source of the checked document as decoded to Unicode lone surrogates replaced with the REPLACEMENT CHARACTER and with line breaks replaced with U+00A0 LINE FEED.
+     *
+     * @var string|null
+     */
+    private $source;
+
+    /**
      * Whether or not the document validated passed or not formal validation.
      *
      * @var bool
@@ -60,6 +67,18 @@ class Response
     public function setEncoding(?string $encoding): self
     {
         $this->encoding = $encoding;
+
+        return $this;
+    }
+
+    public function getSource(): ?string
+    {
+        return $this->source;
+    }
+
+    public function setSource(?string $source): self
+    {
+        $this->source = $source;
 
         return $this;
     }

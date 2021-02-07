@@ -101,7 +101,7 @@ class HTMLValidator
     {
         $query = \http_build_query(\array_merge(
             $this->getOptions()->buildOptions(),
-            ['doc' => $uri, 'out' => 'json']
+            ['doc' => $uri, 'out' => 'json', 'showsource' => 'yes']
         ));
 
         $context = [
@@ -157,7 +157,7 @@ class HTMLValidator
     {
         $query = \http_build_query(\array_merge(
             $this->getOptions()->buildOptions(),
-            ['out' => 'json']
+            ['out' => 'json', 'showsource' => 'yes']
         ));
 
         $context = [
@@ -191,6 +191,7 @@ class HTMLValidator
         $response->setEncoding($data['source']['encoding'] ?? null);
         $response->setType($data['source']['type'] ?? null);
         $response->setUri($data['url'] ?? null);
+        $response->setSource($data['source']['code'] ?? null);
 
         if (isset($data['messages'][0]['type']) && 'non-document-error' === $data['messages'][0]['type']) {
             throw new Exception($data['messages'][0]['message']);
