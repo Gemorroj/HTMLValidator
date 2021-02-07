@@ -5,196 +5,185 @@ namespace HTMLValidator;
 abstract class Message
 {
     /**
-     * line corresponding to the message.
+     * The "lastLine" number indicates the last line (inclusive) onto which the source range associated with the message falls.
      *
-     * Within the source code of the validated document, refers to the line which
-     * caused this message.
-     *
-     * @var int
+     * @var int|null
      */
-    protected $line;
+    private $lastLine;
+    /**
+     * The "firstLine" number indicates the first line onto which the source range associated with the message falls. If the attribute is missing, it is assumed to have the same value as "lastLine".
+     *
+     * @var int|null
+     */
+    private $firstLine;
 
     /**
-     * column corresponding to the message.
+     * The "lastColumn" number indicates the last column (inclusive) onto which the source range associated with the message falls on the last line onto which is falls.
      *
-     * Within the source code of the validated document, refers to the column within
-     * the line for the message.
-     *
-     * @var int
+     * @var int|null
      */
-    protected $col;
+    private $lastColumn;
+    /**
+     * The "firstColumn" number indicates the first column onto which the source range associated with the message falls on the first line onto which is falls.
+     *
+     * @var int|null
+     */
+    private $firstColumn;
 
     /**
-     * The actual message.
+     * The "message" string represents a paragraph of text (suitable for rendering to the user as plain text without further processing) that is the message stated succinctly in natural language.
      *
      * @var string
      */
-    protected $message;
+    private $message;
 
     /**
-     * Unique ID for this message.
+     * The "extract" string represents an extract of the document source from around the point in source designated for the message by the "line" and "column" numbers.
      *
-     * not implemented yet. should be the number of the error, as addressed
-     * internally by the validator
-     *
-     * @var int
+     * @var string|null
      */
-    protected $messageid;
+    private $extract;
 
     /**
-     * Explanation for this message.
-     *
-     * HTML snippet which describes the message, usually with information on
-     * how to correct the problem.
-     *
-     * @var string
+     * @var int|null
      */
-    protected $explanation;
+    private $hiliteStart;
 
     /**
-     * Source which caused the message.
-     *
-     * the snippet of HTML code which invoked the message to give the
-     * context of the e
-     *
-     * @var string
+     * @var int|null
      */
-    protected $source;
+    private $hiliteLength;
 
     /**
-     * @return int
+     * If the "url" string is absent on the message element but present on the root element, the message is considered to be associated with the resource designated by the attribute on the root element.
+     *
+     * @var string|null
      */
-    public function getCol()
+    private $uri;
+
+    /**
+     * Constructor for a response message.
+     *
+     * @param array $message a JSON document node
+     */
+    public function __construct(array $message)
     {
-        return $this->col;
+        $this->setUri($message['url'] ?? null);
+        $this->setExtract($message['extract'] ?? null);
+        $this->setFirstColumn($message['firstColumn'] ?? null);
+        $this->setLastColumn($message['lastColumn'] ?? null);
+        $this->setFirstLine($message['firstLine'] ?? null);
+        $this->setLastLine($message['lastLine'] ?? null);
+        $this->setMessage($message['message'] ?? null);
+        $this->setHiliteLength($message['hiliteLength'] ?? null);
+        $this->setHiliteStart($message['hiliteStart'] ?? null);
     }
 
-    /**
-     * @param int $col
-     *
-     * @return Message
-     */
-    public function setCol($col)
+    public function getLastLine(): ?int
     {
-        $this->col = $col;
+        return $this->lastLine;
+    }
+
+    public function setLastLine(?int $lastLine): self
+    {
+        $this->lastLine = $lastLine;
 
         return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getExplanation()
+    public function getFirstLine(): ?int
     {
-        return $this->explanation;
+        return $this->firstLine;
     }
 
-    /**
-     * @param string $explanation
-     *
-     * @return Message
-     */
-    public function setExplanation($explanation): self
+    public function setFirstLine(?int $firstLine): self
     {
-        $this->explanation = $explanation;
+        $this->firstLine = $firstLine;
 
         return $this;
     }
 
-    /**
-     * @return int
-     */
-    public function getLine()
+    public function getLastColumn(): ?int
     {
-        return $this->line;
+        return $this->lastColumn;
     }
 
-    /**
-     * @param int $line
-     *
-     * @return Message
-     */
-    public function setLine($line): self
+    public function setLastColumn(?int $lastColumn): self
     {
-        $this->line = $line;
+        $this->lastColumn = $lastColumn;
 
         return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getMessage()
+    public function getFirstColumn(): ?int
+    {
+        return $this->firstColumn;
+    }
+
+    public function setFirstColumn(?int $firstColumn): self
+    {
+        $this->firstColumn = $firstColumn;
+
+        return $this;
+    }
+
+    public function getMessage(): string
     {
         return $this->message;
     }
 
-    /**
-     * @param string $message
-     *
-     * @return Message
-     */
-    public function setMessage($message): self
+    public function setMessage(string $message): self
     {
         $this->message = $message;
 
         return $this;
     }
 
-    /**
-     * @return int
-     */
-    public function getMessageid()
+    public function getExtract(): ?string
     {
-        return $this->messageid;
+        return $this->extract;
     }
 
-    /**
-     * @param int $messageid
-     *
-     * @return Message
-     */
-    public function setMessageid($messageid): self
+    public function setExtract(?string $extract): self
     {
-        $this->messageid = $messageid;
+        $this->extract = $extract;
 
         return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getSource()
+    public function getHiliteStart(): ?int
     {
-        return $this->source;
+        return $this->hiliteStart;
     }
 
-    /**
-     * @param string $source
-     *
-     * @return Message
-     */
-    public function setSource($source): self
+    public function setHiliteStart(?int $hiliteStart): self
     {
-        $this->source = $source;
+        $this->hiliteStart = $hiliteStart;
 
         return $this;
     }
 
-    /**
-     * Constructor for a response message.
-     *
-     * @param \DOMElement $node a dom document node
-     */
-    public function __construct(\DOMElement $node = null)
+    public function getHiliteLength(): ?int
     {
-        if ($node) {
-            foreach (\get_class_vars(__CLASS__) as $var => $val) {
-                $element = $node->getElementsByTagName($var);
-                if ($element->length) {
-                    $this->{'set'.\ucfirst($var)}($element->item(0)->nodeValue);
-                }
-            }
-        }
+        return $this->hiliteLength;
+    }
+
+    public function setHiliteLength(?int $hiliteLength): self
+    {
+        $this->hiliteLength = $hiliteLength;
+
+        return $this;
+    }
+
+    public function getUri(): ?string
+    {
+        return $this->uri;
+    }
+
+    public function setUri(?string $uri): self
+    {
+        $this->uri = $uri;
+
+        return $this;
     }
 }

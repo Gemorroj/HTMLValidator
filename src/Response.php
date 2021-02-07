@@ -5,116 +5,73 @@ namespace HTMLValidator;
 class Response
 {
     /**
-     * the address of the document validated.
+     * The address of the document validated.
+     * If present, must contain the URI (not IRI) of the document being checked
+     * or the literal string “data:…” (the last character is U+2026) to signify
+     * that the message is associated with a data URI resource but the exact URI
+     * has been omitted.
+     * If a client application wishes to show IRIs to human users,
+     * it is up to the client application to convert the URI into an IRI.
      *
-     * Will (likely?) be upload://Form Submission
-     * if an uploaded document or fragment was validated. In EARL terms, this is
-     * the TestSubject.
-     *
-     * @var string
+     * @var string|null
      */
-    protected $uri;
-
-    /**
-     * Location of the service which provided the validation result. In EARL terms,
-     * this is the Assertor.
-     *
-     * @var string
-     */
-    protected $checkedby;
+    private $uri;
 
     /**
      * Detected (or forced) Document Type for the validated document.
      *
-     * @var string
+     * @var string|null
      */
-    protected $doctype;
+    private $type;
 
     /**
      * Detected (or forced) Character Encoding for the validated document.
      *
-     * @var string
+     * @var string|null
      */
-    protected $charset;
+    private $encoding;
 
     /**
-     * Whether or not the document validated passed or not formal validation
-     * (true|false boolean).
+     * Whether or not the document validated passed or not formal validation.
      *
      * @var bool
      */
-    protected $validity = false;
+    private $valid = false;
 
     /**
      * Array of Error objects (if applicable).
      *
      * @var Error[]
      */
-    protected $errors = [];
+    private $errors = [];
 
     /**
      * Array of Warning objects (if applicable).
      *
      * @var Warning[]
      */
-    protected $warnings = [];
+    private $warnings = [];
 
-    /**
-     * @return string
-     */
-    public function getCharset()
+    public function getEncoding(): ?string
     {
-        return $this->charset;
+        return $this->encoding;
     }
 
-    /**
-     * @param string $charset
-     *
-     * @return Response
-     */
-    public function setCharset($charset): self
+    public function setEncoding(?string $encoding): self
     {
-        $this->charset = $charset;
+        $this->encoding = $encoding;
 
         return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getCheckedby()
+    public function getType(): ?string
     {
-        return $this->checkedby;
+        return $this->type;
     }
 
-    /**
-     * @param string $checkedby
-     *
-     * @return Response
-     */
-    public function setCheckedby($checkedby): self
+    public function setType(?string $type): self
     {
-        $this->checkedby = $checkedby;
-
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getDoctype()
-    {
-        return $this->doctype;
-    }
-
-    /**
-     * @param string $doctype
-     *
-     * @return Response
-     */
-    public function setDoctype($doctype): self
-    {
-        $this->doctype = $doctype;
+        $this->type = $type;
 
         return $this;
     }
@@ -129,52 +86,34 @@ class Response
 
     /**
      * @param Error[] $errors
-     *
-     * @return Response
      */
-    public function setErrors(array $errors)
+    public function setErrors(array $errors): self
     {
         $this->errors = $errors;
 
         return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getUri()
+    public function getUri(): ?string
     {
         return $this->uri;
     }
 
-    /**
-     * @param string $uri
-     *
-     * @return Response
-     */
-    public function setUri($uri): self
+    public function setUri(?string $uri): self
     {
         $this->uri = $uri;
 
         return $this;
     }
 
-    /**
-     * @return bool
-     */
-    public function isValidity()
+    public function isValid(): bool
     {
-        return $this->validity;
+        return $this->valid;
     }
 
-    /**
-     * @param bool $validity
-     *
-     * @return Response
-     */
-    public function setValidity($validity): self
+    public function setValid(bool $valid): self
     {
-        $this->validity = $validity;
+        $this->valid = $valid;
 
         return $this;
     }
@@ -189,19 +128,14 @@ class Response
 
     /**
      * @param Warning[] $warnings
-     *
-     * @return Response
      */
-    public function setWarnings(array $warnings)
+    public function setWarnings(array $warnings): self
     {
         $this->warnings = $warnings;
 
         return $this;
     }
 
-    /**
-     * @return Response
-     */
     public function addError(Error $error): self
     {
         $this->errors[] = $error;
@@ -209,9 +143,6 @@ class Response
         return $this;
     }
 
-    /**
-     * @return Response
-     */
     public function addWarning(Warning $warning): self
     {
         $this->warnings[] = $warning;

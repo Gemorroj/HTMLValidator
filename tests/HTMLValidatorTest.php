@@ -7,19 +7,19 @@ use PHPUnit\Framework\TestCase;
 
 class HTMLValidatorTest extends TestCase
 {
-    public function testValidHTML(): void
+    public function testValidHTML5Fragment(): void
     {
-        $css = '<html><body></body></html>';
+        $html = '<!DOCTYPE html><html><head><title>test</title></head> <body></body></html>';
         $validator = new HTMLValidator();
-        $result = $validator->validateFragment($css);
+        $result = $validator->validateFragment($html);
         self::assertEmpty($result->getErrors());
     }
 
-    public function testInvalidHTML(): void
+    public function testInvalidHTML5Fragment(): void
     {
-        $css = '<html><body> <test> </body></html>';
+        $html = '<html><body> <test> </body></html>';
         $validator = new HTMLValidator();
-        $result = $validator->validateFragment($css);
+        $result = $validator->validateFragment($html);
         self::assertNotEmpty($result->getErrors());
     }
 }

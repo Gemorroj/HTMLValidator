@@ -9,12 +9,21 @@ class HTMLValidator
      *
      * @var string
      */
-    protected $validatorUri = 'http://validator.w3.org/check';
+    private $validatorUri = 'http://validator.w3.org/nu/';
 
     /**
      * @var Options
      */
-    protected $options;
+    private $options;
+
+    /**
+     * Default context for http request.
+     *
+     * @see https://www.php.net/manual/en/context.php
+     *
+     * @var array
+     */
+    private $context = [];
 
     public function __construct(Options $options = null)
     {
@@ -33,6 +42,18 @@ class HTMLValidator
         return $this;
     }
 
+    public function getContext(): array
+    {
+        return $this->context;
+    }
+
+    public function setContext(array $context): self
+    {
+        $this->context = $context;
+
+        return $this;
+    }
+
     public function getValidatorUri(): string
     {
         return $this->validatorUri;
@@ -46,15 +67,21 @@ class HTMLValidator
     }
 
     /**
-     * @param resource $context
-     *
      * @throws Exception
      */
-    protected function sendRequest(string $uri, $context = null): string
+    protected function sendRequest(string $uri, array $context): string
     {
-        $data = \file_get_contents($uri, null, $context);
+        $context = \array_merge($this->getContext(), $context);
+
+        if (isset($context['http']['header'])) {
+            $context['http']['header'] .= "\r\nUser-Agent: gemorroj/htmlvalidator";
+        } else {
+            $context['http']['header'] = 'User-Agent: gemorroj/htmlvalidator';
+        }
+
+        $data = @\file_get_contents($uri, false, \stream_context_create($context));
         if (false === $data) {
-            throw new Exception('Error send request');
+            throw new Exception(\error_get_last()['message']);
         }
 
         return $data;
@@ -68,27 +95,25 @@ class HTMLValidator
      *
      * @param string $uri The address to the page to validate ex: http://example.com/
      *
-     * @throws Exception
-     *
-     * @return Response object HTMLValidator\Response
+     * @throws Exception|\JsonException
      */
     public function validateUri(string $uri): Response
     {
         $query = \http_build_query(\array_merge(
             $this->getOptions()->buildOptions(),
-            ['uri' => $uri]
+            ['doc' => $uri, 'out' => 'json']
         ));
 
-        $context = \stream_context_create([
+        $context = [
             'http' => [
                 'method' => 'GET',
-                'header' => 'User-Agent: HTMLValidator',
+                'header' => 'Content-Type: text/html; charset=utf-8',
             ],
-        ]);
+        ];
 
         $data = $this->sendRequest($this->validatorUri.'?'.$query, $context);
 
-        return $this->parseSOAP12Response($data);
+        return $this->parseJsonResponse($data);
     }
 
     /**
@@ -98,7 +123,7 @@ class HTMLValidator
      *
      * @param string $file file to be validated
      *
-     * @throws Exception
+     * @throws Exception|\JsonException
      *
      * @return Response object HTMLValidator\Response
      */
@@ -111,9 +136,9 @@ class HTMLValidator
             throw new Exception('File not readable');
         }
 
-        $data = \file_get_contents($file);
+        $data = @\file_get_contents($file);
         if (false === $data) {
-            throw new Exception('Failed get file');
+            throw new Exception(\error_get_last()['message']);
         }
 
         return $this->validateFragment($data);
@@ -124,7 +149,7 @@ class HTMLValidator
      *
      * @param string $html full html document fragment
      *
-     * @throws Exception
+     * @throws Exception|\JsonException
      *
      * @return Response object HTMLValidator\Response
      */
@@ -132,68 +157,54 @@ class HTMLValidator
     {
         $query = \http_build_query(\array_merge(
             $this->getOptions()->buildOptions(),
-            ['fragment' => $html]
+            ['out' => 'json']
         ));
 
-        $context = \stream_context_create([
+        $context = [
             'http' => [
                 'method' => 'POST',
-                'header' => "Content-Type: application/x-www-form-urlencoded\r\nUser-Agent: HTMLValidator",
-                'content' => $query,
+                'header' => 'Content-Type: text/html; charset=utf-8',
+                'content' => $html,
             ],
-        ]);
+        ];
 
-        $data = $this->sendRequest($this->validatorUri, $context);
+        $data = $this->sendRequest($this->validatorUri.'?'.$query, $context);
 
-        return $this->parseSOAP12Response($data);
+        return $this->parseJsonResponse($data);
     }
 
     /**
-     * Parse an XML response from the validator.
+     * Parse an JSON response from the validator.
      *
-     * This function parses a SOAP 1.2 response xml string from the validator.
+     * This function parses a JSON response json string from the validator.
      *
-     * @param string $xml the raw soap12 XML response from the validator
+     * @param string $json the raw JSON response from the validator
      *
-     * @throws Exception
-     *
-     * @return Response object HTMLValidator\Response
+     * @throws Exception|\JsonException
      */
-    protected function parseSOAP12Response(string $xml): Response
+    protected function parseJsonResponse(string $json): Response
     {
-        $doc = new \DOMDocument('1.0', 'UTF-8');
-
-        if (false === $doc->loadXML($xml)) {
-            throw new Exception('Failed load xml');
-        }
+        $data = \json_decode($json, true, 512, \JSON_THROW_ON_ERROR);
 
         $response = new Response();
 
-        // Get the standard CDATA elements
-        foreach (['uri', 'checkedby', 'doctype', 'charset'] as $var) {
-            $element = $doc->getElementsByTagName($var);
-            if ($element->length) {
-                $response->{'set'.\ucfirst($var)}($element->item(0)->nodeValue);
-            }
+        $response->setEncoding($data['source']['encoding'] ?? null);
+        $response->setType($data['source']['type'] ?? null);
+        $response->setUri($data['url'] ?? null);
+
+        if (isset($data['messages'][0]['type']) && 'non-document-error' === $data['messages'][0]['type']) {
+            throw new Exception($data['messages'][0]['message']);
         }
 
-        // Handle the bool element validity
-        $element = $doc->getElementsByTagName('validity');
-        if ($element->length && 'true' === $element->item(0)->nodeValue) {
-            $response->setValidity(true);
-        } else {
-            $response->setValidity(false);
-        }
-
-        if (!$response->isValidity()) {
-            $errors = $doc->getElementsByTagName('error');
-            foreach ($errors as $error) {
-                $response->addError(new Error($error));
+        $response->setValid(true);
+        foreach ($data['messages'] as $message) {
+            if ('error' === $message['type']) {
+                $response->setValid(false);
+                $response->addError(new Error($message));
             }
-        }
-        $warnings = $doc->getElementsByTagName('warning');
-        foreach ($warnings as $warning) {
-            $response->addWarning(new Warning($warning));
+            if ('info' === $message['type']) { // warning
+                $response->addWarning(new Warning($message));
+            }
         }
 
         return $response;
