@@ -17,7 +17,7 @@ class HTMLValidator
      *
      * @var string
      */
-    private $validatorUri = 'http://validator.w3.org/nu/';
+    private $validatorUri = 'https://validator.w3.org/nu/';
 
     /**
      * @var Options
