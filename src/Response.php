@@ -12,52 +12,42 @@ class Response
      * has been omitted.
      * If a client application wishes to show IRIs to human users,
      * it is up to the client application to convert the URI into an IRI.
-     *
-     * @var string|null
      */
-    private $uri;
+    private ?string $uri = null;
 
     /**
      * Detected (or forced) Document Type for the validated document.
-     *
-     * @var string|null
      */
-    private $type;
+    private ?string $type = null;
 
     /**
      * Detected (or forced) Character Encoding for the validated document.
-     *
-     * @var string|null
      */
-    private $encoding;
+    private ?string $encoding = null;
 
     /**
      * The "code" string represents the source of the checked document as decoded to Unicode lone surrogates replaced with the REPLACEMENT CHARACTER and with line breaks replaced with U+00A0 LINE FEED.
-     *
-     * @var string|null
      */
-    private $source;
+    private ?string $source = null;
 
     /**
      * Whether or not the document validated passed or not formal validation.
-     *
-     * @var bool
      */
-    private $valid = false;
+    private bool $valid = false;
 
     /**
      * Array of Error objects (if applicable).
      *
      * @var Error[]
      */
-    private $errors = [];
+    private array $errors = [];
 
     /**
      * Array of Warning objects (if applicable).
      *
      * @var Warning[]
      */
-    private $warnings = [];
+    private array $warnings = [];
 
     public function getEncoding(): ?string
     {

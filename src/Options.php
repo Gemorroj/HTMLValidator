@@ -12,7 +12,7 @@ class Options
      * xml - XML parser, will not load external entities.
      * xmldtd - XML parser, will load external entities.
      */
-    private $parser = 'html5';
+    private string $parser = 'html5';
 
     public function getParser(): string
     {
@@ -26,6 +26,9 @@ class Options
         return $this;
     }
 
+    /**
+     * @return array{string, string}
+     */
     public function buildOptions(): array
     {
         return [

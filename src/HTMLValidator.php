@@ -14,24 +14,15 @@ class HTMLValidator
 {
     /**
      * URI to the w3 validator.
-     *
-     * @var string
      */
-    private $validatorUri = 'https://validator.w3.org/nu/';
+    private string $validatorUri = 'https://validator.w3.org/nu/';
 
-    /**
-     * @var Options
-     */
-    private $options;
-
-    /**
-     * @var HttpClientInterface
-     */
-    private $httpClient;
+    private Options $options;
+    private HttpClientInterface $httpClient;
 
     public function __construct(Options $options = null, HttpClientInterface $httpClient = null)
     {
-        $this->setOptions($options ?: new Options());
+        $this->options = $options ?: new Options();
         if (!$httpClient) {
             $httpClient = HttpClient::createForBaseUri($this->getValidatorUri(), [
                 'headers' => [
@@ -40,7 +31,7 @@ class HTMLValidator
                 ],
             ]);
         }
-        $this->setHttpClient($httpClient);
+        $this->httpClient = $httpClient;
     }
 
     public function getOptions(): Options
