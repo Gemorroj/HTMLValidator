@@ -20,7 +20,7 @@ class HTMLValidator
     private Options $options;
     private HttpClientInterface $httpClient;
 
-    public function __construct(Options $options = null, HttpClientInterface $httpClient = null)
+    public function __construct(?Options $options = null, ?HttpClientInterface $httpClient = null)
     {
         $this->options = $options ?: new Options();
         if (!$httpClient) {
