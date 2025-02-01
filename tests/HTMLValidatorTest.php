@@ -17,7 +17,7 @@ class HTMLValidatorTest extends TestCase
         self::assertFalse($result->isValid());
         self::assertSame('http://example.com', $result->getUri());
         self::assertSame('text/html', $result->getType());
-        self::assertSame('UTF-8', $result->getEncoding());
+        self::assertNull($result->getEncoding());
         self::assertStringContainsString('Example Domain', $result->getSource());
     }
 
