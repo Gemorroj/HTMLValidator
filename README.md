@@ -1,6 +1,6 @@
 # Port PEAR package [HTMLValidator](http://pear.php.net/package/Services_W3C_HTMLValidator)
 
-[![Continuous Integration](https://github.com/Gemorroj/HTMLValidator/workflows/Continuous%20Integration/badge.svg?branch=master)](https://github.com/Gemorroj/HTMLValidator/actions?query=workflow%3A%22Continuous+Integration%22)
+[![Continuous Integration](https://github.com/Gemorroj/HTMLValidator/workflows/Continuous%20Integration/badge.svg)](https://github.com/Gemorroj/HTMLValidator/actions?query=workflow%3A%22Continuous+Integration%22)
 
 
 #### Rewritten to use the new API https://validator.w3.org/docs/api.html
