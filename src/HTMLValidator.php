@@ -113,7 +113,7 @@ class HTMLValidator
      */
     public function validateFile(string $file): Response
     {
-        $f = @\fopen($file, 'rb');
+        $f = @\fopen($file, 'r');
         if (false === $f) {
             throw new Exception(\error_get_last()['message']);
         }
