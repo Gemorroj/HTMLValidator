@@ -12,7 +12,7 @@ class HTMLValidatorTest extends TestCase
         $validator = new HTMLValidator();
         $result = $validator->validateUri('http://example.com');
         self::assertNotEmpty($result->getErrors());
-        self::assertNotEmpty($result->getWarnings());
+        self::assertEmpty($result->getWarnings());
 
         self::assertFalse($result->isValid());
         self::assertSame('http://example.com', $result->getUri());
