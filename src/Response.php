@@ -2,6 +2,9 @@
 
 namespace HTMLValidator;
 
+use HTMLValidator\Message\Error;
+use HTMLValidator\Message\Warning;
+
 class Response
 {
     /**

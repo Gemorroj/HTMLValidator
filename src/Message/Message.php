@@ -1,6 +1,6 @@
 <?php
 
-namespace HTMLValidator;
+namespace HTMLValidator\Message;
 
 abstract class Message
 {
@@ -25,7 +25,7 @@ abstract class Message
     /**
      * The "message" string represents a paragraph of text (suitable for rendering to the user as plain text without further processing) that is the message stated succinctly in natural language.
      */
-    private string $message;
+    private ?string $message = null;
 
     /**
      * The "extract" string represents an extract of the document source from around the point in source designated for the message by the "line" and "column" numbers.
@@ -43,7 +43,7 @@ abstract class Message
     /**
      * Constructor for a response message.
      *
-     * @param array{string, mixed} $message a JSON document node
+     * @param array<string, mixed> $message a JSON document node
      */
     public function __construct(array $message)
     {
@@ -106,12 +106,12 @@ abstract class Message
         return $this;
     }
 
-    public function getMessage(): string
+    public function getMessage(): ?string
     {
         return $this->message;
     }
 
-    public function setMessage(string $message): self
+    public function setMessage(?string $message): self
     {
         $this->message = $message;
 

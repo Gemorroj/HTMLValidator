@@ -1,6 +1,6 @@
 <?php
 
-namespace HTMLValidator;
+namespace HTMLValidator\Message;
 
 class Warning extends Message
 {

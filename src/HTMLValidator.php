@@ -2,6 +2,9 @@
 
 namespace HTMLValidator;
 
+use HTMLValidator\Message\Error;
+use HTMLValidator\Message\Warning;
+use HTMLValidator\Options\Options;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
@@ -15,23 +18,19 @@ class HTMLValidator
     /**
      * URI to the w3 validator.
      */
-    private string $validatorUri = 'https://validator.w3.org/nu/';
+    private string $validatorUri;
 
     private Options $options;
     private HttpClientInterface $httpClient;
 
-    public function __construct(?Options $options = null, ?HttpClientInterface $httpClient = null)
-    {
-        $this->options = $options ?: new Options();
-        if (!$httpClient) {
-            $httpClient = HttpClient::createForBaseUri($this->getValidatorUri(), [
-                'headers' => [
-                    'User-Agent' => 'gemorroj/htmlvalidator',
-                    'Content-Type' => 'text/html; charset=UTF-8',
-                ],
-            ]);
-        }
-        $this->httpClient = $httpClient;
+    public function __construct(
+        ?Options $options = null,
+        ?HttpClientInterface $httpClient = null,
+        string $validatorUri = 'https://validator.w3.org/nu/',
+    ) {
+        $this->options = $options ?? new Options();
+        $this->httpClient = $httpClient ?? HttpClient::create();
+        $this->validatorUri = $validatorUri;
     }
 
     public function getOptions(): Options
@@ -39,35 +38,14 @@ class HTMLValidator
         return $this->options;
     }
 
-    public function setOptions(Options $options): self
-    {
-        $this->options = $options;
-
-        return $this;
-    }
-
     public function getHttpClient(): HttpClientInterface
     {
         return $this->httpClient;
     }
 
-    public function setHttpClient(HttpClientInterface $httpClient): self
-    {
-        $this->httpClient = $httpClient;
-
-        return $this;
-    }
-
     public function getValidatorUri(): string
     {
         return $this->validatorUri;
-    }
-
-    public function setValidatorUri(string $validatorUri): self
-    {
-        $this->validatorUri = $validatorUri;
-
-        return $this;
     }
 
     /**
@@ -81,20 +59,13 @@ class HTMLValidator
      * @throws Exception
      * @throws DecodingExceptionInterface    When the body cannot be decoded to an array
      * @throws TransportExceptionInterface   When a network error occurs
-     * @throws RedirectionExceptionInterface On a 3xx when $throw is true and the "max_redirects" option has been reached
-     * @throws ClientExceptionInterface      On a 4xx when $throw is true
-     * @throws ServerExceptionInterface      On a 5xx when $throw is true
+     * @throws RedirectionExceptionInterface On a 3xx when the "max_redirects" option has been reached
+     * @throws ClientExceptionInterface      On a 4xx
+     * @throws ServerExceptionInterface      On a 5xx
      */
     public function validateUri(string $uri): Response
     {
-        $response = $this->getHttpClient()->request('GET', '', [
-            'query' => \array_merge(
-                $this->getOptions()->buildOptions(),
-                ['doc' => $uri, 'out' => 'json', 'showsource' => 'yes']
-            ),
-        ]);
-
-        return $this->parseResponse($response->toArray());
+        return $this->request('GET', \array_merge($this->buildQuery(), ['doc' => $uri]));
     }
 
     /**
@@ -107,26 +78,22 @@ class HTMLValidator
      * @throws Exception
      * @throws DecodingExceptionInterface    When the body cannot be decoded to an array
      * @throws TransportExceptionInterface   When a network error occurs
-     * @throws RedirectionExceptionInterface On a 3xx when $throw is true and the "max_redirects" option has been reached
-     * @throws ClientExceptionInterface      On a 4xx when $throw is true
-     * @throws ServerExceptionInterface      On a 5xx when $throw is true
+     * @throws RedirectionExceptionInterface On a 3xx when the "max_redirects" option has been reached
+     * @throws ClientExceptionInterface      On a 4xx
+     * @throws ServerExceptionInterface      On a 5xx
      */
     public function validateFile(string $file): Response
     {
         $f = @\fopen($file, 'r');
         if (false === $f) {
-            throw new Exception(\error_get_last()['message']);
+            throw new Exception(\error_get_last()['message'] ?? \sprintf('Unable to open file "%s".', $file));
         }
 
-        $response = $this->getHttpClient()->request('POST', '', [
-            'body' => $f,
-            'query' => \array_merge(
-                $this->getOptions()->buildOptions(),
-                ['out' => 'json', 'showsource' => 'yes']
-            ),
-        ]);
-
-        return $this->parseResponse($response->toArray());
+        try {
+            return $this->request('POST', $this->buildQuery(), $f);
+        } finally {
+            \fclose($f);
+        }
     }
 
     /**
@@ -137,21 +104,57 @@ class HTMLValidator
      * @throws Exception
      * @throws DecodingExceptionInterface    When the body cannot be decoded to an array
      * @throws TransportExceptionInterface   When a network error occurs
-     * @throws RedirectionExceptionInterface On a 3xx when $throw is true and the "max_redirects" option has been reached
-     * @throws ClientExceptionInterface      On a 4xx when $throw is true
-     * @throws ServerExceptionInterface      On a 5xx when $throw is true
+     * @throws RedirectionExceptionInterface On a 3xx when the "max_redirects" option has been reached
+     * @throws ClientExceptionInterface      On a 4xx
+     * @throws ServerExceptionInterface      On a 5xx
      */
     public function validateFragment(string $html): Response
     {
-        $response = $this->getHttpClient()->request('POST', '', [
-            'body' => $html,
-            'query' => \array_merge(
-                $this->getOptions()->buildOptions(),
-                ['out' => 'json', 'showsource' => 'yes']
-            ),
-        ]);
+        return $this->request('POST', $this->buildQuery(), $html);
+    }
+
+    /**
+     * Send a request to the validator and parse its JSON response.
+     *
+     * @param array<string, string> $query
+     * @param string|resource|null  $body
+     *
+     * @throws Exception
+     * @throws DecodingExceptionInterface    When the body cannot be decoded to an array
+     * @throws TransportExceptionInterface   When a network error occurs
+     * @throws RedirectionExceptionInterface On a 3xx when the "max_redirects" option has been reached
+     * @throws ClientExceptionInterface      On a 4xx
+     * @throws ServerExceptionInterface      On a 5xx
+     */
+    private function request(string $method, array $query, mixed $body = null): Response
+    {
+        $options = [
+            'headers' => [
+                'User-Agent' => 'gemorroj/htmlvalidator',
+                'Content-Type' => 'text/html; charset=UTF-8',
+            ],
+            'query' => $query,
+        ];
+        if (null !== $body) {
+            $options['body'] = $body;
+        }
+
+        $response = $this->getHttpClient()->request($method, $this->getValidatorUri(), $options);
 
         return $this->parseResponse($response->toArray());
+    }
+
+    /**
+     * Build the common query string arguments for the validator.
+     *
+     * @return array<string, string>
+     */
+    private function buildQuery(): array
+    {
+        return \array_merge(
+            $this->getOptions()->buildOptions(),
+            ['out' => 'json', 'showsource' => 'yes']
+        );
     }
 
     /**
@@ -163,6 +166,14 @@ class HTMLValidator
      */
     protected function parseResponse(array $data): Response
     {
+        $messages = $data['messages'] ?? [];
+
+        foreach ($messages as $message) {
+            if ('non-document-error' === ($message['type'] ?? null)) {
+                throw new Exception($message['message'] ?? 'The validator reported a non-document error.');
+            }
+        }
+
         $response = new Response();
 
         $response->setEncoding($data['source']['encoding'] ?? null);
@@ -170,17 +181,12 @@ class HTMLValidator
         $response->setUri($data['url'] ?? null);
         $response->setSource($data['source']['code'] ?? null);
 
-        if (isset($data['messages'][0]['type']) && 'non-document-error' === $data['messages'][0]['type']) {
-            throw new Exception($data['messages'][0]['message']);
-        }
-
         $response->setValid(true);
-        foreach ($data['messages'] as $message) {
-            if ('error' === $message['type']) {
+        foreach ($messages as $message) {
+            if ('error' === ($message['type'] ?? null)) {
                 $response->setValid(false);
                 $response->addError(new Error($message));
-            }
-            if ('info' === $message['type']) { // warning
+            } elseif ('info' === ($message['type'] ?? null)) { // warning
                 $response->addWarning(new Warning($message));
             }
         }
