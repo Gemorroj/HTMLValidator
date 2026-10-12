@@ -4,7 +4,11 @@ namespace HTMLValidator\Tests;
 
 use HTMLValidator\Exception;
 use HTMLValidator\HTMLValidator;
+use HTMLValidator\Options\Options;
+use HTMLValidator\Options\ParserType;
+use HTMLValidator\Response;
 use PHPUnit\Framework\TestCase;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class HTMLValidatorTest extends TestCase
 {
@@ -63,7 +67,16 @@ class HTMLValidatorTest extends TestCase
 
     public function testValidHTMLFile(): void
     {
-        $result = (new HTMLValidator())->validateFile(__DIR__.'/fixtures/valid.html');
+        $html = '<!DOCTYPE html><html lang="en"><head><title>test</title></head><body></body></html>';
+        $file = \tempnam(\sys_get_temp_dir(), 'htmlvalidator-');
+        self::assertNotFalse($file);
+        \file_put_contents($file, $html);
+
+        try {
+            $result = (new HTMLValidator())->validateFile($file);
+        } finally {
+            \unlink($file);
+        }
 
         self::assertTrue($result->isValid());
         self::assertEmpty($result->getErrors());
@@ -78,7 +91,7 @@ class HTMLValidatorTest extends TestCase
     {
         $this->expectException(Exception::class);
 
-        (new HTMLValidator())->validateFile(__DIR__.'/fixtures/does-not-exist.html');
+        (new HTMLValidator())->validateFile(__DIR__.'/does-not-exist.html');
     }
 
     public function testValidHTMLFragment(): void
@@ -159,8 +172,87 @@ class HTMLValidatorTest extends TestCase
         self::assertNull($warning->getUri());
     }
 
+    public function testConstructorDefaults(): void
+    {
+        $validator = new HTMLValidator();
+
+        self::assertSame('html5', $validator->getOptions()->getParser());
+        self::assertSame('https://validator.w3.org/nu/', $validator->getValidatorUri());
+    }
+
+    public function testConstructorWithCustomConfiguration(): void
+    {
+        $options = (new Options())->setParser(ParserType::Xml);
+        $httpClient = self::createStub(HttpClientInterface::class);
+
+        $validator = new HTMLValidator($options, $httpClient, 'http://localhost:8888/nu/');
+
+        self::assertSame($options, $validator->getOptions());
+        self::assertSame($httpClient, $validator->getHttpClient());
+        self::assertSame('http://localhost:8888/nu/', $validator->getValidatorUri());
+    }
+
+    public function testParseResponseIgnoresUnknownAndMissingMessageTypes(): void
+    {
+        $response = $this->parseResponse([
+            'url' => 'https://example.com',
+            'source' => ['type' => 'text/html', 'encoding' => 'UTF-8', 'code' => '<html></html>'],
+            'messages' => [
+                ['type' => 'unknown', 'message' => 'ignored'],
+                ['message' => 'without type'],
+            ],
+        ]);
+
+        self::assertTrue($response->isValid());
+        self::assertSame([], $response->getErrors());
+        self::assertSame([], $response->getWarnings());
+        self::assertSame('text/html', $response->getType());
+        self::assertSame('UTF-8', $response->getEncoding());
+    }
+
+    public function testParseResponseWithoutMessages(): void
+    {
+        $response = $this->parseResponse(['url' => 'https://example.com']);
+
+        self::assertTrue($response->isValid());
+        self::assertSame([], $response->getErrors());
+        self::assertSame([], $response->getWarnings());
+        self::assertNull($response->getSource());
+        self::assertNull($response->getType());
+    }
+
+    public function testParseResponseNonDocumentError(): void
+    {
+        try {
+            $this->parseResponse([
+                'messages' => [['type' => 'non-document-error', 'message' => 'io error']],
+            ]);
+            self::fail('Expected Exception to be thrown.');
+        } catch (Exception $e) {
+            self::assertSame('io error', $e->getMessage());
+        }
+    }
+
     private function dataUri(string $html): string
     {
         return 'data:text/html,'.\rawurlencode($html);
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    private function parseResponse(array $data): Response
+    {
+        $validator = new class extends HTMLValidator {
+            /**
+             * @param array<string, mixed> $data
+             */
+            public function parse(array $data): Response
+            {
+                return $this->parseResponse($data);
+            }
+        };
+
+        return $validator->parse($data);
     }
 }
