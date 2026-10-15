@@ -23,4 +23,5 @@ PHP_CS_FIXER_IGNORE_ENV=1 vendor/bin/php-cs-fixer fix
 - Keep changes minimal and focused; do not add new dependencies without need.
 - Keep public API backward compatible; update `README.md` examples if behavior changes.
 - Add or update PHPUnit tests for bug fixes and new features.
+- Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/).
 - Do not commit `vendor/`, `.phpunit.result.cache`, or `.php-cs-fixer.cache`.
